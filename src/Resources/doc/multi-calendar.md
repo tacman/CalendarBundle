@@ -30,16 +30,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CalendarSubscriber implements EventSubscriberInterface
 {
-    private $bookingRepository;
-    private $router;
-
     public function __construct(
-        BookingRepository $bookingRepository,
-        UrlGeneratorInterface $router
-    ) {
-        $this->bookingRepository = $bookingRepository;
-        $this->router = $router;
-    }
+        private BookingRepository $bookingRepository,
+        private UrlGeneratorInterface $router
+    )
+    {}
 
     public static function getSubscribedEvents()
     {
@@ -98,7 +93,7 @@ class CalendarSubscriber implements EventSubscriberInterface
             ]);
             $bookingEvent->addOption(
                 'url',
-                $this->router->generate('booking_show', [
+                $this->router->generate('app_booking_show', [
                     'id' => $booking->getId(),
                 ])
             );

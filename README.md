@@ -76,6 +76,7 @@ class CalendarSubscriber implements EventSubscriberInterface
         ];
     }
 
+<<<<<<< HEAD
     public function onCalendarSetData(SetDataEvent $setDataEvent)
     {
         $start = $setDataEvent->getStart();
@@ -85,13 +86,28 @@ class CalendarSubscriber implements EventSubscriberInterface
         // You may want to make a custom query from your database to fill the calendar
 
         $setDataEvent->addEvent(new Event(
+=======
+    public function onCalendarSetData(SetDataEvent $event)
+    {
+        $start = $event->getStart();
+        $end = $event->getEnd();
+        $filters = $event->getFilters();
+
+        // You may want to make a custom query from your database to fill the calendar
+
+        $event->addEvent(new Event(
+>>>>>>> 7.x
             'Event 1',
             new \DateTime('Tuesday this week'),
             new \DateTime('Wednesdays this week')
         ));
 
         // If the end date is null or not defined, it creates a all day event
+<<<<<<< HEAD
         $setDataEvent->addEvent(new Event(
+=======
+        $event->addEvent(new Event(
+>>>>>>> 7.x
             'All day event',
             new \DateTime('Friday this week')
         ));

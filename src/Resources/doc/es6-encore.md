@@ -62,7 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const { eventsUrl } = calendarEl.dataset;
 
   const calendar = new Calendar(calendarEl, {
+<<<<<<< HEAD
     initialView: 'dayGridMonth',
+=======
+>>>>>>> 7.x
     editable: true,
     eventSources: [
       {
@@ -79,10 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
+<<<<<<< HEAD
       right: 'dayGridMonth,timeGridWeek,timeGridDay',
     },
     timeZone: 'UTC',
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
+=======
+      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+    },
+    initialView: 'dayGridMonth',
+    navLinks: true, // can click day/week names to navigate views
+    plugins: [ interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin ],
+    timeZone: 'UTC',
+>>>>>>> 7.x
   });
 
   calendar.render();

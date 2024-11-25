@@ -30,8 +30,13 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class CalendarSubscriber implements EventSubscriberInterface
 {
     public function __construct(
+<<<<<<< HEAD
         private readonly BookingRepository $bookingRepository,
         private readonly UrlGeneratorInterface $router
+=======
+        private BookingRepository $bookingRepository,
+        private UrlGeneratorInterface $router
+>>>>>>> 7.x
     ) {}
 
     public static function getSubscribedEvents()
@@ -41,6 +46,7 @@ class CalendarSubscriber implements EventSubscriberInterface
         ];
     }
 
+<<<<<<< HEAD
     public function onCalendarSetData(SetDataEvent $event)
     {
         $start = $setDataEvent->getStart();
@@ -54,6 +60,21 @@ class CalendarSubscriber implements EventSubscriberInterface
     }
 
     public function fillCalendarWithBookings(SetDataEvent $setDataEvent, \DateTime $start, \DateTime $end, array $filters)
+=======
+    public function onCalendarSetData(SetDataEvent $event): void
+    {
+        $start = $event->getStart();
+        $end = $event->getEnd();
+        $filters = $event->getFilters();
+
+        match ($filters['calendar-id']) {
+            'booking-calendar' => $this->fillCalendarWithBookings($event, $start, $end, $filters),
+            'other-calendar' => $this->fillCalendarWithOthers($event, $start, $end, $filters),
+        }
+    }
+
+    public function fillCalendarWithBookings(SetDataEvent $event, \DateTime $start, \DateTime $end, array $filters)
+>>>>>>> 7.x
     {
         // Modify the query to fit to your entity and needs
         // Change booking.beginAt by your start date property
@@ -91,7 +112,11 @@ class CalendarSubscriber implements EventSubscriberInterface
             );
 
             // finally, add the event to the SetDataEvent to fill the calendar
+<<<<<<< HEAD
             $setDataEvent->addEvent($bookingEvent);
+=======
+            $event->addEvent($bookingEvent);
+>>>>>>> 7.x
         }
     }
 }

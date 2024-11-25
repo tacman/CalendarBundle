@@ -56,10 +56,17 @@ class Booking
     #[ORM\Column]
     private ?int $id = null;
 
+<<<<<<< HEAD
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTime $beginAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+=======
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $beginAt;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+>>>>>>> 7.x
     private ?\DateTime $endAt = null;
 
     #[ORM\Column(length: 255)]
@@ -75,7 +82,11 @@ class Booking
         return $this->beginAt;
     }
 
+<<<<<<< HEAD
     public function setBeginAt(\DateTime $beginAt): static
+=======
+    public function setBeginAt(\DateTime $beginAt): self
+>>>>>>> 7.x
     {
         $this->beginAt = $beginAt;
 
@@ -87,7 +98,11 @@ class Booking
         return $this->endAt;
     }
 
+<<<<<<< HEAD
     public function setEndAt(?\DateTime $endAt): static
+=======
+    public function setEndAt(?\DateTime $endAt = null): self
+>>>>>>> 7.x
     {
         $this->endAt = $endAt;
 
@@ -255,11 +270,19 @@ class CalendarSubscriber implements EventSubscriberInterface
         ];
     }
 
+<<<<<<< HEAD
     public function onCalendarSetData(SetDataEvent $setDataEvent)
     {
         $start = $setDataEvent->getStart();
         $end = $setDataEvent->getEnd();
         $filters = $setDataEvent->getFilters();
+=======
+    public function onCalendarSetData(SetDataEvent $event)
+    {
+        $start = $event->getStart();
+        $end = $event->getEnd();
+        $filters = $event->getFilters();
+>>>>>>> 7.x
 
         // Modify the query to fit to your entity and needs
         // Change booking.beginAt by your start date property

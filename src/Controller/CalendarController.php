@@ -11,6 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CalendarController extends AbstractController
@@ -20,21 +21,23 @@ class CalendarController extends AbstractController
         private readonly SerializerInterface $serializer,
     ) {}
 
-    public function load(Request $request): JsonResponse
+    public function load(Request $request,
+    #[MapQueryParameter] array $filters,
+    #[MapQueryParameter] string $start,
+    #[MapQueryParameter] string $end,
+    ): JsonResponse
     {
         try {
-            $start = $request->get('start');
-            if ($start && \is_string($start)) {
-                $start = new \DateTime($start);
+            if (\is_string($request->get('start'))) {
+                $start = new \DateTime($request->get('start'));
             } else {
-                throw new \UnexpectedValueException('Query parameter "start" should be a string');
+                throw new \Exception('Query parameter "start" should be a string');
             }
 
-            $end = $request->get('end');
-            if ($end && \is_string($end)) {
-                $end = new \DateTime($end);
+            if (\is_string($request->get('end'))) {
+                $end = new \DateTime($request->get('end'));
             } else {
-                throw new \UnexpectedValueException('Query parameter "end" should be a string');
+                throw new \Exception('Query parameter "end" should be a string');
             }
 
             $filters = $request->get('filters', '{}');
@@ -44,18 +47,17 @@ class CalendarController extends AbstractController
                 default => false,
             };
 
+        } catch (\Exception $e) {
             if (!\is_array($filters)) {
-                throw new \UnexpectedValueException('Query parameter "filters" is not valid');
+                throw new BadRequestHttpException($e->getMessage(), $e);
             }
-        } catch (\UnexpectedValueException $e) {
-            throw new BadRequestHttpException($e->getMessage(), $e);
         }
 
         $setDataEvent = $this->eventDispatcher->dispatch(new SetDataEvent($start, $end, $filters));
 
         $content = $this->serializer->serialize($setDataEvent->getEvents());
 
-        return JsonResponse::fromJsonString(
+        return new JsonResponse(
             $content,
             empty($content) ? Response::HTTP_NO_CONTENT : Response::HTTP_OK,
         );

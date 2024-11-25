@@ -1,16 +1,16 @@
 # Add multiple calendar
 
-In the front template, add a parameter, if the parameter is set to "booking-calendar" show bookings
+In the front template, add a parameter, if the parameter is set to 'booking-calendar' show bookings
 ```js
 extraParams: {
-    filters: JSON.stringify({ "calendar-id": "booking-calendar" })
+    filters: JSON.stringify({ 'calendar-id': 'booking-calendar' })
 },
 ```
 
-In the other front template, add the same parameter, with an other value "other-calendar" to show others
+In the other front template, add the same parameter, with an other value 'other-calendar' to show others
 ```js
 extraParams: {
-    filters: JSON.stringify({ "calendar-id": "other-calendar" })
+    filters: JSON.stringify({ 'calendar-id': 'other-calendar' })
 },
 ```
 
@@ -22,44 +22,38 @@ Then use this kind of logic
 namespace App\EventSubscriber;
 
 use App\Repository\BookingRepository;
-use CalendarBundle\CalendarEvents;
 use CalendarBundle\Entity\Event;
-use CalendarBundle\Event\CalendarEvent;
+use CalendarBundle\Event\SetDataEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CalendarSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private BookingRepository $bookingRepository,
-        private UrlGeneratorInterface $router
-    )
-    {}
+        private readonly BookingRepository $bookingRepository,
+        private readonly UrlGeneratorInterface $router
+    ) {}
 
     public static function getSubscribedEvents()
     {
         return [
-            CalendarEvents::SET_DATA => 'onCalendarSetData',
+            SetDataEvent::class => 'onCalendarSetData',
         ];
     }
 
-    public function onCalendarSetData(CalendarEvent $calendar)
+    public function onCalendarSetData(SetDataEvent $event)
     {
-        $start = $calendar->getStart();
-        $end = $calendar->getEnd();
-        $filters = $calendar->getFilters();
+        $start = $setDataEvent->getStart();
+        $end = $setDataEvent->getEnd();
+        $filters = $setDataEvent->getFilters();
 
-       switch($filters['calendar-id']) {
-            case 'booking-calendar':
-                $this->fillCalendarWithBookings($calendar, $start, $end, $filters);
-                break;
-            case 'other-calendar':
-                $this->fillCalendarWithOthers($calendar, $start, $end, $filters);
-                break;
-       }
+        match ($filters['calendar-id']) {
+            'booking-calendar' => $this->fillCalendarWithBookings($setDataEvent, $start, $end, $filters),
+            'other-calendar' => $this->fillCalendarWithOthers($setDataEvent, $start, $end, $filters),
+        }
     }
 
-    public function fillCalendarWithBookings(CalendarEvent $calendar, \DateTimeInterface $start, \DateTimeInterface $end, array $filters)
+    public function fillCalendarWithBookings(SetDataEvent $setDataEvent, \DateTime $start, \DateTime $end, array $filters)
     {
         // Modify the query to fit to your entity and needs
         // Change booking.beginAt by your start date property
@@ -84,9 +78,7 @@ class CalendarSubscriber implements EventSubscriberInterface
              * Add custom options to events
              *
              * For more information see: https://fullcalendar.io/docs/event-object
-             * and: https://github.com/fullcalendar/fullcalendar/blob/master/src/core/options.ts
              */
-
             $bookingEvent->setOptions([
                 'backgroundColor' => 'red',
                 'borderColor' => 'red',
@@ -98,8 +90,8 @@ class CalendarSubscriber implements EventSubscriberInterface
                 ])
             );
 
-            // finally, add the event to the CalendarEvent to fill the calendar
-            $calendar->addEvent($bookingEvent);
+            // finally, add the event to the SetDataEvent to fill the calendar
+            $setDataEvent->addEvent($bookingEvent);
         }
     }
 }

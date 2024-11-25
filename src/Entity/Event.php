@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace CalendarBundle\Entity;
 
-use DateTimeInterface;
-
 class Event
 {
-    public const DATE_FORMAT = 'Y-m-d\\TH:i:s.u\\Z';
-
     protected bool $allDay = true;
 
+    /**
+     * @param mixed[] $options
+     */
     public function __construct(
         protected string $title,
-        protected DateTimeInterface $start,
-        protected ?DateTimeInterface $end = null,
+        protected \DateTime $start,
+        protected ?\DateTime $end = null,
         protected ?string $resourceId = null,
-        protected array $options = []
+        protected array $options = [],
     ) {
-        $this->setEnd($this->end);
+        $this->setEnd($end);
+        $this->setStart($start);
     }
 
     public function getTitle(): ?string
@@ -32,24 +32,27 @@ class Event
         $this->title = $title;
     }
 
-    public function getStart(): ?DateTimeInterface
+    public function getStart(): ?\DateTime
     {
         return $this->start;
     }
 
-    public function setStart(DateTimeInterface $start): void
+    public function setStart(\DateTime $start): void
     {
+        if ($this->allDay) {
+            $start->setTime(0, 0, 0, 0);
+        }
         $this->start = $start;
     }
 
-    public function getEnd(): ?DateTimeInterface
+    public function getEnd(): ?\DateTime
     {
         return $this->end;
     }
 
-    public function setEnd(?DateTimeInterface $end): void
+    public function setEnd(?\DateTime $end): void
     {
-        if (null !== $end) {
+        if ($end) {
             $this->allDay = false;
         }
         $this->end = $end;
@@ -75,29 +78,35 @@ class Event
         $this->resourceId = $resourceId;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getOptions(): array
     {
         return $this->options;
     }
 
+    /**
+     * @param mixed[] $options
+     */
     public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    public function getOption(int|string $name)
+    public function getOption(string $name): mixed
     {
         return $this->options[$name];
     }
 
-    public function addOption(int|string $name, $value): void
+    public function addOption(string $name, mixed $value): void
     {
         $this->options[$name] = $value;
     }
 
-    public function removeOption(int|string $name): mixed
+    public function removeOption(string $name): mixed
     {
-        if (!isset($this->options[$name]) && !\array_key_exists($name, $this->options)) {
+        if (!isset($this->options[$name])) {
             return null;
         }
 
@@ -107,22 +116,25 @@ class Event
         return $removed;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function toArray(): array
     {
         $event = [
             'title' => $this->getTitle(),
-            'start' => $this->getStart()->format(self::DATE_FORMAT),
+            'start' => $this->getStart()?->format(\DateTime::ATOM),
             'allDay' => $this->isAllDay(),
         ];
 
-        if (null !== $this->getEnd()) {
-            $event['end'] = $this->getEnd()->format(self::DATE_FORMAT);
+        if ($this->getEnd()) {
+            $event['end'] = $this->getEnd()->format(\DateTime::ATOM);
         }
 
-        if (null !== $this->getResourceId()) {
+        if ($this->getResourceId()) {
             $event['resourceId'] = $this->getResourceId();
         }
 
-        return array_merge($event, $this->getOptions());
+        return [...$event, ...$this->getOptions()];
     }
 }

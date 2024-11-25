@@ -14,7 +14,7 @@ This example allow you to create, update, delete & show events with `CalendarBun
 
 This documentation assumes that doctrine is already installed.
 
-> **NOTE:** `composer req symfony/orm-pack` then update the database url in your `.env` and run `bin/console d:d:c`
+> **NOTE:** `composer req doctrine` then update the database url in your `.env` and run `bin/console d:d:c`
 
 ```sh
 composer require tattali/calendar-bundle
@@ -25,7 +25,7 @@ Check the existence of the file `config/routes/calendar.yaml` or create it
 ```yaml
 # config/routes/calendar.yaml
 calendar:
-    resource: "@CalendarBundle/Resources/config/routing.yaml"
+    resource: '@CalendarBundle/Resources/config/routing.yaml'
 ```
 
 ### 2. Create the entity
@@ -33,7 +33,7 @@ calendar:
 Generate or create an entity with at least a *start date* and a *title*. You also can add an *end date*
 
 ```sh
-# Symfony flex (Need the maker: `composer req --dev symfony/maker-bundle`)
+# Symfony flex (Need the maker: `composer req --dev maker`)
 php bin/console make:entity
 ```
 
@@ -44,49 +44,50 @@ In this example we call the entity `Booking`
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\BookingRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 class Booking
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'integer')]
-    #[ORM\GeneratedValue(strategy: 'AUTO')]
-    private ?int $id; # nullable for EasyAdmin
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $beginAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTime $beginAt = null;
 
-    #[ORM\Column(type: 'datetime', nullable:true)]
-    private ?\DateTimeInterface $endAt = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $endAt = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $title;
+    #[ORM\Column(length: 255)]
+    private ?string $title = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getBeginAt(): ?\DateTimeInterface
+    public function getBeginAt(): ?\DateTime
     {
         return $this->beginAt;
     }
 
-    public function setBeginAt(\DateTimeInterface $beginAt): self
+    public function setBeginAt(\DateTime $beginAt): static
     {
         $this->beginAt = $beginAt;
 
         return $this;
     }
 
-    public function getEndAt(): ?\DateTimeInterface
+    public function getEndAt(): ?\DateTime
     {
         return $this->endAt;
     }
 
-    public function setEndAt(?\DateTimeInterface $endAt = null): self
+    public function setEndAt(?\DateTime $endAt): static
     {
         $this->endAt = $endAt;
 
@@ -98,7 +99,7 @@ class Booking
         return $this->title;
     }
 
-    public function setTitle(string $title): self
+    public function setTitle(string $title): static
     {
         $this->title = $title;
 
@@ -115,11 +116,14 @@ namespace App\Repository;
 
 use App\Entity\Booking;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Booking>
+ */
 class BookingRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Booking::class);
     }
@@ -163,7 +167,7 @@ class BookingController extends AbstractController
 {
     // ...
 
-    #[Route(path: '/calendar', name: "app_booking_calendar", methods: ['GET'])]
+    #[Route(path: '/calendar', name: 'app_booking_calendar')]
     public function calendar(): Response
     {
         return $this->render('booking/calendar.html.twig');
@@ -203,10 +207,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class CalendarSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private BookingRepository $bookingRepository,
-        private UrlGeneratorInterface $router
-    )
-    {}
+        private readonly BookingRepository $bookingRepository,
+        private readonly UrlGeneratorInterface $router
+    ) {}
 
     // ...
 }
@@ -233,32 +236,30 @@ Full subscriber with `Booking` entity. Modify it to fit your needs.
 namespace App\EventSubscriber;
 
 use App\Repository\BookingRepository;
-use CalendarBundle\CalendarEvents;
 use CalendarBundle\Entity\Event;
-use CalendarBundle\Event\CalendarEvent;
+use CalendarBundle\Event\SetDataEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CalendarSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private BookingRepository $bookingRepository,
-        private UrlGeneratorInterface $router
-    )
-    {}
+        private readonly BookingRepository $bookingRepository,
+        private readonly UrlGeneratorInterface $router
+    ) {}
 
     public static function getSubscribedEvents()
     {
         return [
-            CalendarEvents::SET_DATA => 'onCalendarSetData',
+            SetDataEvent::class => 'onCalendarSetData',
         ];
     }
 
-    public function onCalendarSetData(CalendarEvent $calendar)
+    public function onCalendarSetData(SetDataEvent $setDataEvent)
     {
-        $start = $calendar->getStart();
-        $end = $calendar->getEnd();
-        $filters = $calendar->getFilters();
+        $start = $setDataEvent->getStart();
+        $end = $setDataEvent->getEnd();
+        $filters = $setDataEvent->getFilters();
 
         // Modify the query to fit to your entity and needs
         // Change booking.beginAt by your start date property
@@ -283,9 +284,7 @@ class CalendarSubscriber implements EventSubscriberInterface
              * Add custom options to events
              *
              * For more information see: https://fullcalendar.io/docs/event-object
-             * and: https://github.com/fullcalendar/fullcalendar/blob/master/src/core/options.ts
              */
-
             $bookingEvent->setOptions([
                 'backgroundColor' => 'red',
                 'borderColor' => 'red',
@@ -298,7 +297,7 @@ class CalendarSubscriber implements EventSubscriberInterface
             );
 
             // finally, add the event to the CalendarEvent to fill the calendar
-            $calendar->addEvent($bookingEvent);
+            $setDataEvent->addEvent($bookingEvent);
         }
     }
 }
@@ -333,34 +332,35 @@ Full template:
 {% endblock %}
 
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/index.global.min.js" integrity="sha256-dHUNnePy81fXq4D/wfu7cPsEIP7zl6MvLb84jtZf+UY=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', () => {
-            var calendarEl = document.getElementById('calendar-holder');
+            const calendarEl = document.getElementById('calendar-holder');
 
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                defaultView: 'dayGridMonth',
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
                 editable: true,
                 eventSources: [
                     {
                         url: "{{ path('fc_load_events') }}",
-                        method: "POST",
+                        method: 'POST',
                         extraParams: {
                             filters: JSON.stringify({})
                         },
                         failure: () => {
-                            // alert("There was an error while fetching FullCalendar!");
+                            // alert('There was an error while fetching FullCalendar!');
                         },
                     },
                 ],
                 headerToolbar: {
-                    start: 'prev,next today',
+                    left: 'prev,next today',
                     center: 'title',
-                    end: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay',
                 },
                 timeZone: 'UTC',
             });
+
             calendar.render();
         });
     </script>

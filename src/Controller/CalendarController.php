@@ -4,42 +4,60 @@ declare(strict_types=1);
 
 namespace CalendarBundle\Controller;
 
-use CalendarBundle\CalendarEvents;
-use CalendarBundle\Event\CalendarEvent;
+use CalendarBundle\Event\SetDataEvent;
 use CalendarBundle\Serializer\SerializerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class CalendarController
+class CalendarController extends AbstractController
 {
     public function __construct(
-        protected EventDispatcherInterface $eventDispatcher,
-        protected SerializerInterface $serializer
-    )
-    {}
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SerializerInterface $serializer,
+    ) {}
 
-    /**
-     * @throws \Exception
-     */
-    public function loadAction(Request $request): Response
+    public function load(Request $request): JsonResponse
     {
-        $start = new \DateTime($request->get('start'));
-        $end = new \DateTime($request->get('end'));
-        $filters = $request->get('filters', '{}');
-        $filters = \is_array($filters) ? $filters : json_decode($filters, true);
+        try {
+            $start = $request->get('start');
+            if ($start && \is_string($start)) {
+                $start = new \DateTime($start);
+            } else {
+                throw new \UnexpectedValueException('Query parameter "start" should be a string');
+            }
 
-        $event = $this->eventDispatcher->dispatch(
-            new CalendarEvent($start, $end, $filters),
-            CalendarEvents::SET_DATA
+            $end = $request->get('end');
+            if ($end && \is_string($end)) {
+                $end = new \DateTime($end);
+            } else {
+                throw new \UnexpectedValueException('Query parameter "end" should be a string');
+            }
+
+            $filters = $request->get('filters', '{}');
+            $filters = match (true) {
+                \is_array($filters) => $filters,
+                \is_string($filters) => json_decode($filters, true),
+                default => false,
+            };
+
+            if (!\is_array($filters)) {
+                throw new \UnexpectedValueException('Query parameter "filters" is not valid');
+            }
+        } catch (\UnexpectedValueException $e) {
+            throw new BadRequestHttpException($e->getMessage(), $e);
+        }
+
+        $setDataEvent = $this->eventDispatcher->dispatch(new SetDataEvent($start, $end, $filters));
+
+        $content = $this->serializer->serialize($setDataEvent->getEvents());
+
+        return JsonResponse::fromJsonString(
+            $content,
+            empty($content) ? Response::HTTP_NO_CONTENT : Response::HTTP_OK,
         );
-        $content = $this->serializer->serialize($event->getEvents());
-
-        $response = new Response();
-        $response->headers->set('Content-Type', 'application/json');
-        $response->setContent($content);
-        $response->setStatusCode(empty($content) ? Response::HTTP_NO_CONTENT : Response::HTTP_OK);
-
-        return $response;
     }
 }

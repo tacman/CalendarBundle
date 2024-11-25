@@ -1,7 +1,7 @@
 {
     "name": "tattali/calendar-bundle",
     "type": "symfony-bundle",
-    "description": "Provides event calendar for your Symfony 5+ project. Compatible with Doctrine ORM & ODM, and API like Google Calendar.",
+    "description": "Provides event calendar for your Symfony 5+ project. Compatible with API like Google Calendar.",
     "keywords": [
         "fullcalendar",
         "calendar",
@@ -18,18 +18,19 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
+        "php": ">=8.2",
         "ext-json": "*",
-        "symfony/dependency-injection": "^5.4 || ^6.2",
-        "symfony/event-dispatcher": "^5.4 || ^6.2",
-        "symfony/framework-bundle": "^5.4 || ^6.2"
+        "symfony/dependency-injection": "^7.0",
+        "symfony/event-dispatcher": "^7.0",
+        "symfony/framework-bundle": "^7.0"
     },
     "require-dev": {
-        "phpspec/prophecy": "^1.17",
-        "phpunit/phpunit": "^9.6",
-        "symfony/dotenv": "^5.4 || ^6.2",
-        "symfony/phpunit-bridge": "^5.4 || ^6.2",
-        "symfony/yaml": "^5.4 || ^6.2"
+        "phpunit/phpunit": "^11.0",
+        "symfony/dotenv": "^7.0",
+        "symfony/phpunit-bridge": "^7.0",
+        "symfony/yaml": "^7.0",
+        "friendsofphp/php-cs-fixer": "^3.54",
+        "phpstan/phpstan": "^1.10"
     },
     "suggest": {
         "symfony/orm-pack": "To support Doctrine ORM and Migration.",
@@ -43,6 +44,11 @@
     "autoload-dev": {
         "psr-4": {
             "CalendarBundle\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
         }
     }
 }

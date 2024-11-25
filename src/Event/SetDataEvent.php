@@ -5,47 +5,51 @@ declare(strict_types=1);
 namespace CalendarBundle\Event;
 
 use CalendarBundle\Entity\Event;
-use DateTimeInterface;
 
 /**
  * This event is triggered before the serialization of the events.
  *
  * This event allows you to fill the calendar with your data.
  */
-class CalendarEvent
+class SetDataEvent
 {
     /**
      * @var Event[]
      */
-    protected array $events = [];
+    private array $events;
 
+    /**
+     * @param mixed[] $filters
+     */
     public function __construct(
-        protected DateTimeInterface $start,
-        protected DateTimeInterface $end,
-        protected array $filters
+        private readonly \DateTime $start,
+        private readonly \DateTime $end,
+        private readonly array $filters,
     ) {
+        $this->events = [];
     }
 
-    public function getStart(): DateTimeInterface
+    public function getStart(): \DateTime
     {
         return $this->start;
     }
 
-    public function getEnd(): DateTimeInterface
+    public function getEnd(): \DateTime
     {
         return $this->end;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getFilters(): array
     {
         return $this->filters;
     }
 
-    public function addEvent(Event $event, bool $checkUnique=false): self
+    public function addEvent(Event $event): self
     {
-        if (!$checkUnique || !\in_array($event, $this->events, true)) {
-            $this->events[] = $event;
-        }
+        $this->events[] = $event;
 
         return $this;
     }

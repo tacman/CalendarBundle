@@ -13,10 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-<<<<<<< HEAD
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-=======
->>>>>>> 7.x
 
 final class CalendarControllerTest extends TestCase
 {
@@ -85,11 +82,8 @@ final class CalendarControllerTest extends TestCase
 
         self::assertInstanceOf(JsonResponse::class, $response);
 
-<<<<<<< HEAD
         self::assertSame($data, $response->getContent());
-=======
         self::assertJson((string) $response->getContent());
->>>>>>> 7.x
         self::assertSame(JsonResponse::HTTP_OK, $response->getStatusCode());
     }
 
@@ -124,7 +118,6 @@ final class CalendarControllerTest extends TestCase
 
         self::assertInstanceOf(JsonResponse::class, $response);
 
-<<<<<<< HEAD
         self::assertSame($data, $response->getContent());
         self::assertSame(JsonResponse::HTTP_NO_CONTENT, $response->getStatusCode());
     }
@@ -157,9 +150,7 @@ final class CalendarControllerTest extends TestCase
         ;
 
         $this->controller->load($this->request);
-=======
         self::assertJson((string) $response->getContent());
         self::assertSame(JsonResponse::HTTP_NO_CONTENT, $response->getStatusCode());
->>>>>>> 7.x
     }
 }

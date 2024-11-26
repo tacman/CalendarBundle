@@ -22,19 +22,19 @@ class SetDataEvent
      * @param mixed[] $filters
      */
     public function __construct(
-        private readonly \DateTime $start,
-        private readonly \DateTime $end,
-        private readonly array $filters,
+        private readonly ?\DateTime $start=null,
+        private readonly ?\DateTime $end=null,
+        private readonly array $filters=[],
     ) {
         $this->events = [];
     }
 
-    public function getStart(): \DateTime
+    public function getStart(): ?\DateTime
     {
         return $this->start;
     }
 
-    public function getEnd(): \DateTime
+    public function getEnd(): ?\DateTime
     {
         return $this->end;
     }

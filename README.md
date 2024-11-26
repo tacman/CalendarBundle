@@ -15,7 +15,7 @@ This bundle allow you to integrate [FullCalendar.js](https://fullcalendar.io/) l
 Documentation
 -------------
 
-The source of the documentation is stored in the `src/Resources/doc/` folder in this bundle
+The source of the documentation is stored in the `/doc/` folder in this bundle
 
 - [Link the calendar to a CRUD and allow create, update, delete & show events](src/Resources/doc/doctrine-crud.md)
 - [Webpack Encore and fullcalendar.js](src/Resources/doc/es6-encore.md)
@@ -76,7 +76,6 @@ class CalendarSubscriber implements EventSubscriberInterface
         ];
     }
 
-<<<<<<< HEAD
     public function onCalendarSetData(SetDataEvent $setDataEvent)
     {
         $start = $setDataEvent->getStart();
@@ -86,28 +85,13 @@ class CalendarSubscriber implements EventSubscriberInterface
         // You may want to make a custom query from your database to fill the calendar
 
         $setDataEvent->addEvent(new Event(
-=======
-    public function onCalendarSetData(SetDataEvent $event)
-    {
-        $start = $event->getStart();
-        $end = $event->getEnd();
-        $filters = $event->getFilters();
-
-        // You may want to make a custom query from your database to fill the calendar
-
-        $event->addEvent(new Event(
->>>>>>> 7.x
             'Event 1',
             new \DateTime('Tuesday this week'),
             new \DateTime('Wednesdays this week')
         ));
 
         // If the end date is null or not defined, it creates a all day event
-<<<<<<< HEAD
         $setDataEvent->addEvent(new Event(
-=======
-        $event->addEvent(new Event(
->>>>>>> 7.x
             'All day event',
             new \DateTime('Friday this week')
         ));
@@ -185,3 +169,8 @@ License
 -------
 
 This bundle is under the MIT license. See the complete [license](LICENSE) in the bundle
+
+```bash
+composer config repositories.calendar '{"type": "path", "url": "/home/tac/g/tacman/CalendarBundle"}'
+composer require tattali/calendar-bundle:*@dev
+```

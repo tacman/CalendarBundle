@@ -1,3 +1,11 @@
+> # ⛔ DEPRECATED — do not use
+>
+> Superseded by **[ccal](https://github.com/survos/ccal)** (the Community Calendar Aggregator app) + **[survos/ux-calendar-bundle](https://github.com/survos/ux-calendar-bundle)** (FullCalendar v7 + AssetMapper rendering).
+>
+> A fork of tattali/CalendarBundle (FullCalendar via Webpack/Stimulus). The rendering layer is now survos/ux-calendar-bundle — no tattali dependency, works with AssetMapper.
+
+---
+
 CalendarBundle - FullCalendar.js integration
 ===========================================
 
